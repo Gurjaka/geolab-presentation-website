@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation | My Project</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <header></header>
+
+    <main>
+        <div class="slide-wrapper">
+            <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vRK30LFCihsir-gEe9HswCq_jpXZF66z7Pg_8YfPLPAOXU_j3ujm8Ltn0ZZz9KG6Q/embed?start=false&loop=false&delayms=3000" 
+                    frameborder="0" allowfullscreen="true"></iframe>
+        </div>
+        <div id="slides-container" style="margin-top: 2rem;">
+            <!-- Slides will be loaded here -->
+        </div>
+    </main>
+
+    <div class="slide-nav">
+        <button id="prev-slide">Previous</button>
+        <button id="next-slide">Next</button>
+    </div>
+
+    <footer></footer>
+
+    <script src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        let currentSlide = 0;
+        let slides = [];
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.style.display = 'block';
+                    setTimeout(() => slide.classList.add('active'), 10); // Small delay for transition
+                } else {
+                    slide.classList.remove('active');
+                    slide.style.display = 'none';
+                }
+            });
+        }
+
+        fetch('presentation.md')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('presentation.md not found');
+                }
+                return response.text();
+            })
+            .then(text => {
+                const slidesContainer = document.getElementById('slides-container');
+                const slideContent = text.split('## **სლაიდი');
+                slideContent.forEach((slideText, index) => {
+                    if (slideText.trim() === '') return;
+
+                    const slideElement = document.createElement('div');
+                    slideElement.classList.add('slide');
+                    slideElement.innerHTML = marked.parse('## **სლაიდი' + slideText);
+                    slidesContainer.appendChild(slideElement);
+                    slides.push(slideElement);
+                });
+                showSlide(currentSlide);
+            })
+            .catch(error => {
+                const slidesContainer = document.getElementById('slides-container');
+                slidesContainer.innerHTML = `<p style="color:red;">${error.message}</p>`;
+            });
+
+        document.getElementById('next-slide').addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+
+        document.getElementById('prev-slide').addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+    </script>
+</body>
+</html>
